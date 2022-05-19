@@ -34,15 +34,16 @@ if(prod){
 const client = new Eureka({
     instance:{
         app:'order-service',
-        instanceId:`${ip.address()}:${process.env.PORT!}`,
+        instanceId:`${ip.address()}:order-service:${process.env.PORT!}`,
         hostName:`${ip.address()}`,
         ipAddr:`${ip.address()}`,
-        statusPageUrl:'http://localhost:3066/check',
+        statusPageUrl:`http://${ip.address()}:3066/check`,
+
         port:{
             '$':3066,
             '@enabled':true
         },
-        vipAddress: 'order-service.jeonghyeon.com',
+        vipAddress: 'order-service',
         dataCenterInfo: {
             '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
             name: 'MyOwn',
@@ -97,6 +98,10 @@ const initKafka = async ()=>{
     })
 }
 
+
+client.start( error => {
+    console.log(error || "order service registered")
+});
 app.use((err:any, req:Request, res:Response, next:NextFunction) => {
     console.log(err);
     return res.status(400).send({msg: err.message});
