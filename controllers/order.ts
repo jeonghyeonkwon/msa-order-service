@@ -8,9 +8,38 @@ import Food from "../models/food";
 import Order from "../models/order";
 import {v4} from "uuid";
 import OrderItem from "../models/orderItem";
+import {PageDto} from "../common/PageDto";
 
 
+// /restaurant/:restaurantId/order
+export const orderList = async (req:Request,res:Response,next:NextFunction)=>{
+    let restaurantId = req.params.restaurantId;
+    let page:number = Number(req.query.page) | 1 ;
+    let limit:number = 10;
+    let offset:number = Number(0 + ( page - 1 ) * limit);
+    const orderList = await Order.findAndCountAll({
+        offset:offset,
+        limit:limit,
+        where:{
+            restaurantId:restaurantId
+        },
+        attributes:['orderId','restaurantId','buyerId','userName','userTel','userAddress'],
+        include:[{
+            model:OrderItem,
 
+            attributes:['itemCount','foodName','foodPrice']
+        }]
+    });
+    console.log(orderList)
+
+    const {count,rows} = orderList
+
+    const pageDto = new PageDto(count,limit,page,rows)
+    return res.status(200).send({
+        restaurantId:restaurantId,
+        data:pageDto
+    });
+}
 
 // /:userRandomId/order'
 export const createOrder = async (req:Request ,res:Response ,next:NextFunction) => {
@@ -44,7 +73,14 @@ export const createOrder = async (req:Request ,res:Response ,next:NextFunction) 
         }))
         const orderItems = await Promise.all(orderItemPromises);
         createOrder.addOrderItems(orderItems);
+
         console.log(JSON.stringify(foodList,null,2));
+        res.status(201).send({
+            statusCode:201,
+            message:{
+                orderId:createOrder.orderId
+            }
+        })
     }catch (err){
         next(err);
     }
@@ -74,7 +110,7 @@ export const createRestaurant = async (restaurant:IRestaurantGroup)=>{
 
 export const createFood = async (food:IFoodGroup)=>{
     try{
-        const {foodName,foodId,foodPrice} = food;
+        const {foodName,foodId,foodPrice,restaurantId} = food;
 
         const isExistFood = await Food.findOne({where:{foodId}});
         if(isExistFood){
@@ -84,7 +120,9 @@ export const createFood = async (food:IFoodGroup)=>{
                 foodName,
                 foodPrice,
                 foodId,
+                restaurantId
             })
+
         }
     }catch (err){
         console.error(err);

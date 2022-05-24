@@ -57,7 +57,7 @@ const client = new Eureka({
 })
 
 sequelize
-    .sync({force: true})
+    .sync({force: false})
     .then(() => {
         console.log('연결 성공');
     })

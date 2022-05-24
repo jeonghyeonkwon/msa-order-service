@@ -3,6 +3,7 @@ export interface IFoodGroup{
     foodName:string;
     foodPrice:number;
     foodId:string;
+    restaurantId:string;
     updatedAt:string;
     createdAt:string;
 }

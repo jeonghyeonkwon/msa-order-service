@@ -29,6 +29,10 @@ Food.init({
         type:DataTypes.STRING,
         allowNull:false,
         unique:true
+    },
+    restaurantId:{
+        type:DataTypes.STRING,
+        allowNull:false,
     }
 },{
     sequelize,
